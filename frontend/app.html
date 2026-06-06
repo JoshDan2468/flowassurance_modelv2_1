@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FAIP Executive Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    background: #0b1220;
+    color: #e2e8f0;
+    margin: 0;
+}
+
+.header {
+    background: #020617;
+    padding: 20px 30px;
+    border-bottom: 1px solid #1e293b;
+}
+
+.header h1 { margin: 0; font-size: 24px; color: #38bdf8; letter-spacing: 0.5px; }
+
+.container { padding: 25px; display: flex; flex-direction: column; gap: 20px; }
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    background: #1e293b;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #334155;
+}
+
+.card h3 { margin-top: 0; margin-bottom: 15px; color: #94a3b8; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+
+.input-group { display: flex; flex-direction: column; }
+
+label { font-size: 12px; margin-bottom: 6px; color: #cbd5e1; }
+
+input {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #475569;
+    background: #020617;
+    color: white;
+    font-size: 14px;
+    transition: border 0.2s;
+}
+
+input:focus { outline: none; border-color: #38bdf8; }
+
+button {
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    margin: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    color: white;
+    transition: opacity 0.2s;
+}
+
+button:hover { opacity: 0.9; }
+
+.run { background: #2563eb; }
+.shutdown { background: #ea580c; }
+.download { background: #16a34a; }
+.clear { background: #dc2626; }
+
+.kpi { font-size: 28px; font-weight: bold; margin-top: 5px; }
+
+.low { color: #4ade80; }
+.medium { color: #facc15; }
+.high { color: #f87171; }
+
+.text-box { white-space: pre-line; line-height: 1.6; font-size: 14px; color: #cbd5e1; }
+
+.chart-container {
+    position: relative;
+    background: #020617;
+    border-radius: 10px;
+    padding: 15px;
+    border: 1px solid #334155;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+<h1>Flow Assurance Intelligence Platform (FAIP)</h1>
+</div>
+
+<div class="container">
+
+<!-- INPUT PARAMETERS -->
+<div class="card">
+<h3>Pipeline Parameters</h3>
+<div class="grid">
+<div class="input-group"><label>Inlet Temp (°C)</label><input id="T_inlet" value="40"></div>
+<div class="input-group"><label>Pressure (bar)</label><input id="P_inlet" value="220"></div>
+<div class="input-group"><label>Gas Flow (m³/s)</label><input id="Q_gas" value="55"></div>
+<div class="input-group"><label>Oil Flow (bbl/day)</label><input id="Q_oil" value="8000"></div>
+<div class="input-group"><label>Water Flow (bbl/day)</label><input id="Q_water" value="6500"></div>
+<div class="input-group"><label>Pipe Diameter (m)</label><input id="D_pipe" value="0.2"></div>
+<div class="input-group"><label>Seawater Temp (°C)</label><input id="T_seawater" value="4"></div>
+<div class="input-group"><label>Gas Gravity</label><input id="gas_gravity" value="0.74"></div>
+<div class="input-group"><label>Oil API</label><input id="oil_API" value="31"></div>
+<div class="input-group"><label>Salinity (%)</label><input id="salinity" value="1"></div>
+<div class="input-group"><label>H₂S</label><input id="H2S" value="0.03"></div>
+<div class="input-group"><label>CO₂</label><input id="CO2" value="2.5"></div>
+<div class="input-group"><label>Wax (%)</label><input id="wax_content" value="4"></div>
+<div class="input-group"><label>Asphaltene</label><input id="asphaltene_index" value="1.2"></div>
+<div class="input-group"><label>Insulation (0/1)</label><input id="insulation" value="0"></div>
+<div class="input-group"><label>Chemical (L/hr)</label><input id="chemical_injection" value="0"></div>
+<div class="input-group"><label>Age (days)</label><input id="age_days" value="1500"></div>
+<div class="input-group"><label>Shutdown Time (hrs)</label><input id="shutdown_time" value="48"></div>
+</div>
+
+<div style="text-align:center; margin-top:25px;">
+<button class="run" onclick="predict()">Run Analysis</button>
+<button class="shutdown" onclick="runShutdown()">Optimize Shutdown</button>
+<button class="download" onclick="downloadReport()">Download Report</button>
+<button class="clear" onclick="clearAll()">Clear</button>
+</div>
+</div>
+
+<!-- EXECUTIVE KPIs -->
+<div class="grid">
+<div class="card">
+<h3>Risk Level</h3>
+<div id="risk" class="kpi">-</div>
+</div>
+<div class="card">
+<h3>Max Subcooling</h3>
+<div id="subcool" class="kpi">-</div>
+</div>
+<div class="card">
+<h3>Safe Shutdown Window</h3>
+<div id="window" class="kpi" style="font-size: 16px; line-height: 1.5;">-</div>
+</div>
+</div>
+
+<!-- TEXT REPORT INSIGHTS -->
+<div class="grid">
+<div class="card">
+<h3>Insights</h3>
+<div id="insights" class="text-box"></div>
+</div>
+<div class="card">
+<h3>Recommendations</h3>
+<div id="recommendations" class="text-box"></div>
+</div>
+</div>
+
+<!-- GRAPH CHARTS VISUALIZATION -->
+<div class="grid" style="grid-template-columns: 1fr 1fr;">
+<div class="card">
+<h3>Thermal Cooldown & Profile</h3>
+<div class="chart-container">
+    <canvas id="chart"></canvas>
+</div>
+</div>
+<div class="card">
+<h3>Shutdown Safety Spectrum</h3>
+<div class="chart-container">
+    <canvas id="shutdownChart"></canvas>
+</div>
+</div>
+</div>
+
+</div>
+
+<script>
+let chart, shutdownChart;
+let lastResult = null;
+
+// Global settings for dark-theme charts
+Chart.defaults.color = '#94a3b8';
+Chart.defaults.borderColor = '#334155';
+
+function getData() {
+    return {
+        T_inlet: +document.getElementById("T_inlet").value,
+        P_inlet: +document.getElementById("P_inlet").value,
+        Q_gas: +document.getElementById("Q_gas").value,
+        Q_oil: +document.getElementById("Q_oil").value,
+        Q_water: +document.getElementById("Q_water").value,
+        D_pipe: +document.getElementById("D_pipe").value,
+        T_seawater: +document.getElementById("T_seawater").value,
+        gas_gravity: +document.getElementById("gas_gravity").value,
+        oil_API: +document.getElementById("oil_API").value,
+        salinity: +document.getElementById("salinity").value,
+        H2S: +document.getElementById("H2S").value,
+        CO2: +document.getElementById("CO2").value,
+        wax_content: +document.getElementById("wax_content").value,
+        asphaltene_index: +document.getElementById("asphaltene_index").value,
+        insulation: +document.getElementById("insulation").value,
+        chemical_injection: +document.getElementById("chemical_injection").value,
+        age_days: +document.getElementById("age_days").value,
+        shutdown_time: +document.getElementById("shutdown_time").value
+    };
+}
+
+// ==========================================
+// 1. RUN TRANSIENT & MACHINE LEARNING INFERENCE
+// ==========================================
+async function predict() {
+    try {
+        const res = await fetch("http://127.0.0.1:8000/predict", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(getData())
+        });
+
+        if (!res.ok) throw new Error("API Server processing error.");
+        
+        const r = await res.json();
+        lastResult = r;
+
+        const riskEl = document.getElementById("risk");
+        riskEl.innerText = r.risk_level;
+        riskEl.className = "kpi " + r.risk_level.toLowerCase();
+
+        document.getElementById("subcool").innerText = r.physics.max_subcooling.toFixed(2) + " °C";
+        document.getElementById("insights").innerText = r.insights.length ? r.insights.join("\n") : "No significant abnormalities.";
+        document.getElementById("recommendations").innerText = r.recommendations.join("\n");
+
+        if (chart) chart.destroy();
+
+        const timeLabels = r.transient.time.map(t => t.toFixed(1));
+
+        chart = new Chart(document.getElementById("chart"), {
+            type: "line",
+            data: {
+                labels: timeLabels,
+                datasets: [
+                    {
+                        label: "Fluid Temperature (°C)",
+                        data: r.transient.temperature_profile,
+                        borderColor: '#38bdf8',
+                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.1
+                    },
+                    {
+                        label: "Hydrate Equilibrium (T_eq)",
+                        data: Array(r.transient.time.length).fill(r.transient.hydrate_equilibrium),
+                        borderColor: '#f87171',
+                        borderDash: [6, 6],
+                        borderWidth: 2,
+                        pointRadius: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: true } },
+                scales: {
+                    x: { title: { display: true, text: 'Shutdown Elapsed Duration (hrs)' } },
+                    y: { title: { display: true, text: 'Temperature (°C)' } }
+                }
+            }
+        });
+
+    } catch (error) {
+        alert("Pipeline error: " + error.message);
+    }
+}
+
+// ==========================================
+// 2. RUN SHUTDOWN WINDOW OPTIMIZATION
+// ==========================================
+async function runShutdown() {
+    try {
+        const res = await fetch("http://127.0.0.1:8000/shutdown-analysis", { // Corrected URL
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(getData())
+        });
+
+        if (!res.ok) throw new Error("Optimization pathway analysis failed.");
+        const data = await res.json();
+
+        const win = data.operating_window;
+        document.getElementById("window").innerHTML =
+            `Safe Window: <span class="low">${win.safe_shutdown_hours} hrs</span><br>` +
+            `Caution Phase: <span class="medium">${win.caution_start} hrs</span><br>` +
+            `Critical Limit: <span class="high">${win.critical_after} hrs</span>`;
+
+        if (shutdownChart) shutdownChart.destroy();
+        
+        const profile = data.shutdown_profile;
+        const labels = profile.map(p => p.shutdown_time + "h");
+        const subcoolingValues = profile.map(p => p.subcooling);
+
+        shutdownChart = new Chart(document.getElementById("shutdownChart"), {
+            type: "bar",
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: "Predicted Subcooling Severity (°C)",
+                    data: subcoolingValues,
+                    backgroundColor: profile.map(p => 
+                        p.risk === "HIGH" ? '#f87171' : p.risk === "MEDIUM" ? '#facc15' : '#4ade80'
+                    ),
+                    borderWidth: 0,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: true } },
+                scales: {
+                    x: { title: { display: true, text: 'Evaluated Shutdown Checkpoints' } },
+                    y: { title: { display: true, text: 'Subcooling Depth (°C)' } }
+                }
+            }
+        });
+
+    } catch (error) {
+        alert("Optimization Engine error: " + error.message);
+    }
+}
+
+// ==========================================
+// 3. EXECUTE ENGINEERING REPORT REPORTLAB DOWNLOAD
+// ==========================================
+async function downloadReport() {
+    try {
+        const res = await fetch("http://127.0.0.1:8000/report", { // Corrected URL
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(getData())
+        });
+
+        if (!res.ok) throw new Error("Could not compile document payload.");
+
+        const fileBlob = await res.blob();
+        const localUrl = window.URL.createObjectURL(fileBlob);
+        
+        const hiddenAnchor = document.createElement("a");
+        hiddenAnchor.href = localUrl;
+        hiddenAnchor.download = "FAIP_Flow_Assurance_Report.pdf";
+        document.body.appendChild(hiddenAnchor);
+        hiddenAnchor.click();
+        
+        document.body.removeChild(hiddenAnchor);
+        window.URL.revokeObjectURL(localUrl);
+
+    } catch (error) {
+        alert("Report download failed: " + error.message);
+    }
+}
+
+// ==========================================
+// 4. RESET RUN INTERFACE TIMELINES
+// ==========================================
+function clearAll() {
+    if (chart) chart.destroy();
+    if (shutdownChart) shutdownChart.destroy();
+    document.getElementById("risk").innerText = "-";
+    document.getElementById("risk").className = "kpi";
+    document.getElementById("subcool").innerText = "-";
+    document.getElementById("window").innerText = "-";
+    document.getElementById("insights").innerText = "";
+    document.getElementById("recommendations").innerText = "";
+    lastResult = null;
+}
+</script>
+</body>
+</html>
