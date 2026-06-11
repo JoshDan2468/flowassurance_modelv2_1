@@ -16,12 +16,12 @@ import { authRoutes } from "@/routes/-auth-routes";
  */
 export const routes = {
   home: "/",
-  dashboard: "/dashboard",
+  dashboard: "/",
   simulations: "/simulations",
   newSimulation: "/simulation/new",
   simulationResults: "/simulation/results",
   reports: "/reports",
-  projects: "/projects",
+  projects: "/assets",
   settings: "/settings",
 } as const;
 

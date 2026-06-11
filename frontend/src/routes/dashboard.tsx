@@ -1,5 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { DashboardPage } from "@/pages/Dashboard/DashboardPage";
+import { Navigate, createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -11,5 +10,5 @@ export const Route = createFileRoute("/dashboard")({
       },
     ],
   }),
-  component: DashboardPage,
+  component: () => <Navigate to="/" />,
 });

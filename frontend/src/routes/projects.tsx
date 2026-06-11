@@ -1,5 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { ProjectsPage } from "@/pages/Projects/ProjectsPage";
+import { Navigate, createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/projects")({
   head: () => ({
@@ -8,5 +7,5 @@ export const Route = createFileRoute("/projects")({
       { name: "description", content: "Subsea pipeline project registry." },
     ],
   }),
-  component: ProjectsPage,
+  component: () => <Navigate to="/assets" />,
 });
