@@ -51,7 +51,7 @@ const mockAssets = [
 
 function AssetsPage() {
   return (
-    <div className="mx-auto flex max-w-[1400px] flex-col gap-6">
+    <div className="mx-auto flex max-w-350 flex-col gap-6">
       <div>
         <div className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
           Registry
@@ -71,10 +71,10 @@ function AssetsPage() {
                   variant="outline"
                   className={
                     a.risk === "HIGH"
-                      ? "border-[color:var(--risk-high)]/50 text-[color:var(--risk-high)]"
+                      ? "border-(--risk-high)/50 text-risk-high"
                       : a.risk === "MEDIUM"
-                        ? "border-[color:var(--risk-medium)]/50 text-[color:var(--risk-medium)]"
-                        : "border-[color:var(--risk-low)]/50 text-[color:var(--risk-low)]"
+                        ? "border-(--risk-medium)/50 text-risk-medium"
+                        : "border-(--risk-low)/50 text-risk-low"
                   }
                 >
                   {a.risk}

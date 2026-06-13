@@ -17,7 +17,7 @@ export function RiskRadar({ risks }: { risks: PredictionResult["risks"] }) {
     { axis: "Corrosion", value: risks.corrosion.probability * 100 },
   ];
   return (
-    <div className="h-[320px] w-full">
+    <div className="h-80 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <RadarChart data={data} outerRadius="72%">
           <PolarGrid stroke="var(--border)" />

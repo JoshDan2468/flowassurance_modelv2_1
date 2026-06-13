@@ -19,7 +19,7 @@ export function ThermalChart({
 }) {
   const data = series.time.map((t, i) => ({ t, temp: series.temperature_profile[i] }));
   return (
-    <div className="h-[320px] w-full">
+    <div className="h-80 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ left: 0, right: 12, top: 12, bottom: 0 }}>
           <defs>
